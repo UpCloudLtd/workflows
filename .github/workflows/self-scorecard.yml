@@ -1,0 +1,19 @@
+on:
+  branch_protection_rule:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "42 4 * * MON"
+
+permissions: {}
+
+jobs:
+  scorecard:
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write
+    uses: ./.github/workflows/openssf-scorecard.yml
+    with:
+      publish-results: true
