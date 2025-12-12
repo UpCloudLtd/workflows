@@ -6,7 +6,9 @@ on:
       publish-results:
         description: |-
           Whether to publish results.
-          Note that the `id-token: write` permission is required irrespective of this input (but only used if true).
+          Note that the `id-token: write` permission is required irrespective of this input,
+          as the permissions config cannot be made conditional based on inputs.
+          It is only used when publishing results though (i.e. when this is `true`).
         type: boolean
 
 permissions: {}
@@ -17,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
-      security-events: write
+      id-token: write # for result authenticity verification when publishing on scorecard.dev
+      security-events: write # for issuing code scanning findings in the GitHub project
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
