@@ -1,0 +1,25 @@
+name: Build provenance
+
+on:
+  workflow_call:
+    inputs:
+      subject-checksums:
+        description: Subject checksums to attest; contents of a checksums file.
+        type: string
+        required: true
+
+permissions: {}
+
+jobs:
+  attest-build-provenance:
+    name: Attest build provenance
+    runs-on: ubuntu-latest
+    permissions:
+      attestations: write # to persist
+      id-token: write     # to sign
+    steps:
+      - name: Write subject checksums to a file
+        run: printf %s "${{ inputs.subject-checksums }}" >subject-checksums.txt
+      - uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8 # v3.1.0
+        with:
+          subject-checksums: subject-checksums.txt
