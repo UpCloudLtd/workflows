@@ -12,8 +12,8 @@ jobs:
   scorecard:
     permissions:
       contents: read
-      id-token: write
-      security-events: write
+      id-token: write # for result authenticity verification when publishing on scorecard.dev
+      security-events: write # for issuing code scanning findings in the GitHub project
     uses: ./.github/workflows/openssf-scorecard.yaml
     with:
       publish-results: true
