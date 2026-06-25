@@ -7,6 +7,13 @@ on:
         description: Subject checksums to attest; contents of a checksums file.
         type: string
         required: true
+    outputs:
+      bundle-artifact-id:
+        description: Sigstore bundle artifact id.
+        value: ${{ jobs.attest-build-provenance.outputs.bundle-artifact-id }}
+      bundle-artifact-filename:
+        description: Sigsture bundle artifact filename.
+        value: ${{ jobs.attest-build-provenance.outputs.bundle-artifact-filename }}
 
 permissions: {}
 
@@ -17,9 +24,27 @@ jobs:
     permissions:
       attestations: write # to persist
       id-token: write     # to sign
+    outputs:
+      bundle-artifact-id: ${{ steps.upload-bundle.outputs.artifact-id }}
+      bundle-artifact-filename: ${{ steps.prepare-bundle.outputs.bundle-filename }}
     steps:
       - name: Write subject checksums to a file
         run: printf %s "${{ inputs.subject-checksums }}" >subject-checksums.txt
-      - uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      - name: Attest
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        id: attest
         with:
           subject-checksums: subject-checksums.txt
+      - name: Prepare Sigstore bundle
+        id: prepare-bundle
+        run: |
+          filename=${GITHUB_REPOSITORY##*/}.sigstore.json
+          cp "${{ steps.attest.outputs.bundle-path }}" "$filename"
+          printf "bundle-filename=%s\n" "$filename" >>"$GITHUB_OUTPUT"
+      - name: Upload Sigstore bundle
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        id: upload-bundle
+        with:
+          name: Sigstore bundle
+          path: ${{ steps.prepare-bundle.outputs.bundle-filename }}
+          archive: false
